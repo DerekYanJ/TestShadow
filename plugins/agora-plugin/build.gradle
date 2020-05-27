@@ -1,0 +1,80 @@
+apply from: "../agora-app/build.gradle"
+
+android {
+    defaultConfig {
+        applicationId project.SAMPLE_HOST_APP_APPLICATION_ID
+    }
+}
+
+dependencies {
+    //Shadow Transform后业务代码会有一部分实际引用runtime中的类
+    //如果不以compileOnly方式依赖，会导致其他Transform或者Proguard找不到这些类
+    compileOnly 'com.tencent.shadow.core:runtime-debug'
+}
+
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.tencent.shadow.core:runtime-debug'
+        classpath 'com.tencent.shadow.core:activity-container-debug'
+        classpath 'com.tencent.shadow.core:gradle-plugin'
+        classpath 'org.javassist:javassist:3.22.0-GA'
+    }
+}
+
+apply plugin: 'com.tencent.shadow.plugin'
+
+shadow {
+    transform {
+//        useHostContext = ['abc']
+    }
+
+    packagePlugin {
+        pluginTypes {
+            debug {
+                loaderApkConfig = new Tuple2('loader-debug.apk', ':loader:assembleDebug')
+                runtimeApkConfig = new Tuple2('runtime-plugin-debug.apk', ':runtime-plugin:assembleDebug')
+                pluginApks {
+                    pluginApk1 {
+                        businessName = 'agora-plugin'
+                        partKey = 'agora-plugin'
+                        buildTask = ':agora-plugin:assembleDebug'
+                        apkName = 'agora-plugin-debug.apk'
+                        apkPath = 'plugins/agora-plugin/build/outputs/apk/debug/agora-plugin-debug.apk'
+                        hostWhiteList = ["com.tencent.shadow.sample.host.lib","com.yqy.test.commlib"]
+                    }
+                }
+            }
+
+            release {
+                loaderApkConfig = new Tuple2('loader-release.apk', ':loader:assembleRelease')
+                runtimeApkConfig = new Tuple2('runtime-plugin-release.apk', ':runtime-plugin:assembleRelease')
+                pluginApks {
+                    pluginApk1 {
+                        businessName = 'agora-plugin'
+                        partKey = 'agora-plugin'
+                        buildTask = ':agora-plugin:assembleRelease'
+                        apkName = 'agora-plugin-release.apk'
+                        apkPath = 'plugins/agora-plugin/build/outputs/apk/release/agora-plugin-release.apk'
+                        hostWhiteList = ["com.tencent.shadow.sample.host.lib","com.yqy.test.commlib"]
+                    }
+                }
+            }
+        }
+
+        loaderApkProjectPath = 'plugins/loader'
+        runtimeApkProjectPath = 'plugins/runtime-plugin'
+
+        archiveSuffix = System.getenv("PluginSuffix") ?: ""
+        archivePrefix = 'plugin'
+        destinationDir = "${getRootProject().getBuildDir()}"
+
+        version = 1
+        compactVersion = []
+        uuidNickName = "0.0.1"
+    }
+}

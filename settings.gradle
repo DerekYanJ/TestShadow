@@ -1,0 +1,14 @@
+rootProject.name='TestShadow'
+include ':app' , ':commlib', ':loader', ':plugin-maneger',':constant',':runtime-plugin',':agora-app', ':agora-lib',':agora-plugin'
+
+
+project(':loader').projectDir = file("plugins/loader")
+project(':runtime-plugin').projectDir = file("plugins/runtime-plugin")
+project(':agora-app').projectDir = file("plugins/agora-app")
+project(':agora-lib').projectDir = file("plugins/agora_lib")
+project(':agora-plugin').projectDir = file("plugins/agora-plugin")
+
+
+includeBuild 'shadow/sdk/coding'
+includeBuild 'shadow/sdk/core'
+includeBuild 'shadow/sdk/dynamic'
